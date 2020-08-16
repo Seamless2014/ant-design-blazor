@@ -74,7 +74,7 @@ namespace AntDesign
                 var element = Config.AutoFocusButton == ConfirmAutoFocusButton.Cancel
                     ? _cancelBtn
                     : _okBtn;
-                await JsInvokeAsync(JSInteropConstants.focusDialog, $"#{element.Id}");
+                await JsInvokeAsync(JSInteropConstants.FocusDialog, $"#{element.Id}");
             }
 
             await base.OnAfterRenderAsync(firstRender);

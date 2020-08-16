@@ -61,7 +61,7 @@ namespace AntDesign
         };
 
         private static readonly List<(int PixelWidth, BreakpointEnum Breakpoint)> _descriptionsResponsiveMap = new List<(int, BreakpointEnum)>()
-        {          
+        {
             (575,BreakpointEnum.xs),
             (576,BreakpointEnum.sm),
             (768,BreakpointEnum.md),
@@ -161,7 +161,7 @@ namespace AntDesign
             }
             else
             {
-                Element element = await JsInvokeAsync<Element>(JSInteropConstants.getDomInfo, _divRef);
+                Element element = await JsInvokeAsync<Element>(JSInteropConstants.GetDomInfo, _divRef);
                 var breakpointTuple = _descriptionsResponsiveMap.FirstOrDefault(x => x.PixelWidth > element.clientWidth);
                 var bp = breakpointTuple == default ? BreakpointEnum.xxl : breakpointTuple.Breakpoint;
                 _realColumn = Column.AsT1.ContainsKey(bp.ToString()) ? Column.AsT1[bp.ToString()] : _defaultColumnMap[bp.ToString()];

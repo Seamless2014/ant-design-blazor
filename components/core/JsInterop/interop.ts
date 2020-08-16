@@ -456,3 +456,23 @@ function mentionsOnWindowClick(e) {
 }
 
 //#endregion
+
+export function setPointerCapture(el, p) {
+  if (document.getElementById(el) !== null) {
+    document.getElementById(el).setPointerCapture(p);
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
+export function releasePointerCapture(el, p) {
+  if (document.getElementById(el) !== null) {
+    document.getElementById(el).releasePointerCapture(p);
+    return true;
+  }
+  else {
+    return false;
+  }
+}

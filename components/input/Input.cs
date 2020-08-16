@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.Web;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace AntDesign
 {
@@ -149,7 +149,7 @@ namespace AntDesign
 
         public async Task Focus()
         {
-            await JsInvokeAsync(JSInteropConstants.focus, Ref);
+            await JsInvokeAsync(JSInteropConstants.Focus, Ref);
         }
 
         protected virtual async Task OnChangeAsync(ChangeEventArgs args)

@@ -100,7 +100,7 @@ namespace AntDesign
         {
             await base.OnAfterRenderAsync(firstRender);
 
-            DomRect listRect = await JsInvokeAsync<DomRect>(JSInteropConstants.getBoundingClientRect, _ref);
+            DomRect listRect = await JsInvokeAsync<DomRect>(JSInteropConstants.GetBoundingClientRect, _ref);
             if ((_slickWidth != (int)listRect.width && IsHorizontal)
                 || (_slickHeight != (int)listRect.height && !IsHorizontal)
                 || IsHorizontal && !string.IsNullOrEmpty(_slickListStyle)

@@ -75,7 +75,7 @@ namespace AntDesign
 
             await typeof(BreakpointEnum).GetEnumNames().ForEachAsync(async bp =>
             {
-                if (await JsInvokeAsync<bool>(JSInteropConstants.matchMedia, _gridResponsiveMap[bp]))
+                if (await JsInvokeAsync<bool>(JSInteropConstants.MatchMedia, _gridResponsiveMap[bp]))
                 {
                     breakPoint = bp;
                 }
