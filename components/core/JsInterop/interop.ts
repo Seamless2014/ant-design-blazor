@@ -458,8 +458,8 @@ function mentionsOnWindowClick(e) {
 //#endregion
 
 export function setPointerCapture(el, p) {
-  if (document.getElementById(el) !== null) {
-    document.getElementById(el).setPointerCapture(p);
+  if (el !== null) {
+    el.setPointerCapture(p);
     return true;
   }
   else {
@@ -468,8 +468,8 @@ export function setPointerCapture(el, p) {
 }
 
 export function releasePointerCapture(el, p) {
-  if (document.getElementById(el) !== null) {
-    document.getElementById(el).releasePointerCapture(p);
+  if (el !== null) {
+    el.releasePointerCapture(p);
     return true;
   }
   else {

@@ -1,18 +1,30 @@
 ﻿using System;
+using System.Text;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.JSInterop;
 
 namespace AntDesign
 {
     public class ResizeHandle : AntDomComponentBase, IDisposable
     {
-        [Inject]
-        private IJSRuntime JsRuntimeCurrent { get; set; }
+        [Parameter]
+        public int Index { get; set; }
 
         [Parameter]
-        public BsSettings BsSettings { get; set; }
+        public bool VerticalOrHorizontal { get; set; } = false;
+
+        [Parameter]
+        public bool IsDiagonal { get; set; } = false;
+
+        [Parameter]
+        public double Width { get; set; } = 5;
+
+        [Parameter]
+        public double Height { get; set; } = 30;
+
+        [Parameter]
+        public string BgColor { get; set; } = "silver";
 
         [Parameter]
         public Action<bool, int, int> OnPositionChange { get; set; }
@@ -26,7 +38,7 @@ namespace AntDesign
         [Parameter]
         public Action<int, int, int> OnDragEnd { get; set; }
 
-        private BSplitter BSplitter { get; set; } = new BSplitter();
+        private readonly Splitter _splitter = new Splitter();
 
         private bool _dragMode = false;
 
@@ -35,10 +47,6 @@ namespace AntDesign
 
         protected override void OnInitialized()
         {
-            BSplitter.BsbSettings = BsSettings;
-
-            BSplitter._propertyChanged = BSplitter_PropertyChanged;
-
             _dragMode = false;
 
             base.OnInitialized();
@@ -49,28 +57,23 @@ namespace AntDesign
             return EnableRender;
         }
 
-        private void BSplitter_PropertyChanged()
-        {
-            EnableRender = true;
-            StateHasChanged();
-        }
-
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            if (EnableRender)
+            if (EnableRender && builder != null)
             {
                 base.BuildRenderTree(builder);
 
-                int k = 0;
-                builder.OpenElement(k++, "div");
-                builder.AddAttribute(k++, "id", BSplitter.BsbSettings.ID);
-                builder.AddAttribute(k++, "style", BSplitter.BsbSettings.GetStyle());
-                //builder.AddAttribute(k++, "ref", Ref);
-                builder.AddAttribute(k++, "onpointerdown", EventCallback.Factory.Create<PointerEventArgs>(this, OnPointerDown));
-                builder.AddAttribute(k++, "onpointermove", EventCallback.Factory.Create<PointerEventArgs>(this, OnPointerMove));
-                builder.AddAttribute(k++, "onpointerup", EventCallback.Factory.Create<PointerEventArgs>(this, OnPointerUp));
+                int i = 0;
+                builder.OpenElement(i++, "div");
+                builder.AddAttribute(i++, "id", Id);
+                builder.AddAttribute(i++, "style", GetStyle());
+                builder.AddAttribute(i++, "onpointerdown", EventCallback.Factory.Create<PointerEventArgs>(this, OnPointerDown));
+                builder.AddAttribute(i++, "onpointermove", EventCallback.Factory.Create<PointerEventArgs>(this, OnPointerMove));
+                builder.AddAttribute(i++, "onpointerup", EventCallback.Factory.Create<PointerEventArgs>(this, OnPointerUp));
 
-                builder.AddEventPreventDefaultAttribute(k++, "onmousemove", true);
+                builder.AddEventPreventDefaultAttribute(i++, "onmousemove", true);
+
+                builder.AddElementReferenceCapture(i++, (value) => { Ref = value; });
                 //builder.AddAttribute(k++, "onmousemove", EventCallback.Factory.Create<MouseEventArgs>(this, "return false;")); //event.preventDefault()
 
                 builder.CloseElement();
@@ -79,31 +82,66 @@ namespace AntDesign
             }
         }
 
-        private void OnPointerDown(PointerEventArgs e)
+        internal string GetStyle()
         {
-            JsRuntimeCurrent.InvokeAsync<bool>(JSInteropConstants.SetPointerCapture, BSplitter.BsbSettings.ID, e.PointerId);
-            _dragMode = true;
+            StringBuilder sb1 = new StringBuilder();
 
-            if (BsSettings.IsDiagonal)
+            sb1.Append("width:" + Width + "px;height:" + Height + "px;");
+
+            if (!VerticalOrHorizontal)
             {
-                BSplitter.PreviousPosition = (int)e.ClientX;
-                BSplitter.PreviousPosition2 = (int)e.ClientY;
+                sb1.Append("display:inline-block;");
+            }
+
+            //sb1.Append("background-color:red;");
+            sb1.Append("background-color:" + BgColor + ";");
+
+            if (IsDiagonal)
+            {
+                sb1.Append("cursor:nwse-resize;");
             }
             else
             {
-                if (BsSettings.VerticalOrHorizontal)
+                if (VerticalOrHorizontal)
                 {
-                    BSplitter.PreviousPosition = (int)e.ClientY;
-                    BSplitter.PreviousPosition2 = (int)e.ClientX;
+                    sb1.Append("cursor:s-resize;");
+                    //sb1.Append("cursor:col-resize;");
                 }
                 else
                 {
-                    BSplitter.PreviousPosition = (int)e.ClientX;
-                    BSplitter.PreviousPosition2 = (int)e.ClientY;
+                    sb1.Append("cursor:w-resize;");
+                    //sb1.Append("cursor:col-resize;");
                 }
             }
 
-            OnDragStart?.Invoke(BSplitter.BsbSettings.Index, (int)e.ClientX, (int)e.ClientY);
+            return sb1.ToString();
+        }
+
+        private void OnPointerDown(PointerEventArgs e)
+        {
+            JsInvokeAsync<bool>(JSInteropConstants.SetPointerCapture, Ref, e.PointerId);
+            _dragMode = true;
+
+            if (IsDiagonal)
+            {
+                _splitter.PreviousPosition = (int)e.ClientX;
+                _splitter.PreviousPosition2 = (int)e.ClientY;
+            }
+            else
+            {
+                if (VerticalOrHorizontal)
+                {
+                    _splitter.PreviousPosition = (int)e.ClientY;
+                    _splitter.PreviousPosition2 = (int)e.ClientX;
+                }
+                else
+                {
+                    _splitter.PreviousPosition = (int)e.ClientX;
+                    _splitter.PreviousPosition2 = (int)e.ClientY;
+                }
+            }
+
+            OnDragStart?.Invoke(Index, (int)e.ClientX, (int)e.ClientY);
         }
 
         private void OnPointerMove(PointerEventArgs e)
@@ -115,22 +153,22 @@ namespace AntDesign
                     int newPosition = 0;
                     int newPosition2 = 0;
 
-                    if (BsSettings.IsDiagonal)
+                    if (IsDiagonal)
                     {
                         newPosition = (int)e.ClientX;
                         newPosition2 = (int)e.ClientY;
 
-                        if (BSplitter.PreviousPosition != newPosition || BSplitter.PreviousPosition2 != newPosition2)
+                        if (_splitter.PreviousPosition != newPosition || _splitter.PreviousPosition2 != newPosition2)
                         {
-                            OnDiagonalPositionChange?.Invoke(BsSettings.Index, newPosition - BSplitter.PreviousPosition, newPosition2 - BSplitter.PreviousPosition2);
+                            OnDiagonalPositionChange?.Invoke(Index, newPosition - _splitter.PreviousPosition, newPosition2 - _splitter.PreviousPosition2);
 
-                            BSplitter.PreviousPosition = newPosition;
-                            BSplitter.PreviousPosition2 = newPosition2;
+                            _splitter.PreviousPosition = newPosition;
+                            _splitter.PreviousPosition2 = newPosition2;
                         }
                     }
                     else
                     {
-                        if (BsSettings.VerticalOrHorizontal)
+                        if (VerticalOrHorizontal)
                         {
                             newPosition = (int)e.ClientY;
                             newPosition2 = (int)e.ClientX;
@@ -141,13 +179,13 @@ namespace AntDesign
                             newPosition2 = (int)e.ClientY;
                         }
 
-                        if (Math.Abs(BSplitter.PreviousPosition2 - newPosition2) < 100)
+                        if (Math.Abs(_splitter.PreviousPosition2 - newPosition2) < 100)
                         {
-                            if (BSplitter.PreviousPosition != newPosition)
+                            if (_splitter.PreviousPosition != newPosition)
                             {
-                                OnPositionChange?.Invoke(BsSettings.VerticalOrHorizontal, BsSettings.Index, newPosition - BSplitter.PreviousPosition);
+                                OnPositionChange?.Invoke(VerticalOrHorizontal, Index, newPosition - _splitter.PreviousPosition);
 
-                                BSplitter.PreviousPosition = newPosition;
+                                _splitter.PreviousPosition = newPosition;
                             }
                         }
                         //else
@@ -161,10 +199,10 @@ namespace AntDesign
 
         private void OnPointerUp(PointerEventArgs e)
         {
-            JsRuntimeCurrent.InvokeAsync<bool>(JSInteropConstants.ReleasePointerCapture, BSplitter.BsbSettings.ID, e.PointerId);
+            JsInvokeAsync<bool>(JSInteropConstants.ReleasePointerCapture, Ref, e.PointerId);
             _dragMode = false;
 
-            OnDragEnd?.Invoke(BSplitter.BsbSettings.Index, (int)e.ClientX, (int)e.ClientY);
+            OnDragEnd?.Invoke(Index, (int)e.ClientX, (int)e.ClientY);
         }
 
         public void Dispose()
@@ -173,7 +211,7 @@ namespace AntDesign
 
         public void SetColor(string c)
         {
-            BSplitter.BsbSettings.BgColor = c;
+            BgColor = c;
             EnableRender = true;
             StateHasChanged();
         }

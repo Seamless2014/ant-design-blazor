@@ -9,15 +9,15 @@
 <table style=@("border: 1px solid black;margin-left:100px;margin-top:50px")>
     <thead>
         <tr>
-            <th style=@("border: 1px solid black;width:30px;height:40px;background-color:"+bsSettings_List_Cols[0].BgColor)>
+            <th style=@("border: 1px solid black;width:30px;height:40px;background-color:"+bsSettings_List_Cols[0]["BgColor"])>
 
             </th>
             @for (int i = 0; i < CompBlazorSplitters_List_Cols.Count - 1; i++)
             {
-                <th style=@("border: 1px solid black;height:40px;background-color:"+ bsSettings_List_Cols[i].BgColor)>
+                <th style=@("border: 1px solid black;height:40px;background-color:"+ bsSettings_List_Cols[i]["BgColor"])>
                     <div style="display:flex;flex-direction:row;line-height:40px">
                         <span style=@("color:blue;width:"+(Width_list_Cols[i]-5)+"px;height:40px;text-align:center")>Col @(i + 1)</span>
-                        <ResizeHandle @ref="@CompBlazorSplitters_List_Cols[i]" OnPositionChange="@OnPositionChange" bsSettings="@bsSettings_List_Cols[i]" EnableRender="true"></ResizeHandle>
+                        <ResizeHandle @ref="@CompBlazorSplitters_List_Cols[i]" OnPositionChange="@OnPositionChange" @attributes="@bsSettings_List_Cols[i]" EnableRender="true"></ResizeHandle>
                     </div>
                 </th>
             }
@@ -29,15 +29,15 @@
         @for (int g = 0; g < 5; g++)
         {
             <tr>
-                <td valign="top" align="center" style=@("width:30px;border: 1px solid black;background-color:"+bsSettings_List_Rows[0].BgColor)>
+                <td valign="top" align="center" style=@("width:30px;border: 1px solid black;background-color:"+bsSettings_List_Rows[0]["BgColor"])>
                     <div style=@("height:"+Height_list_Rows[g] +"px; overflow:hidden;")>
                         <span style=@("color:blue;width:30px:display:inline-block;line-height:"+(Height_list_Rows[g]-5)+"px;text-align:center")>@(g + 1)</span>
-                        <ResizeHandle @ref="@CompBlazorSplitters_List_Rows[g]" OnPositionChange="@OnPositionChange" bsSettings="@bsSettings_List_Rows[g]" EnableRender="true"></ResizeHandle>
+                        <ResizeHandle @ref="@CompBlazorSplitters_List_Rows[g]" OnPositionChange="@OnPositionChange" @attributes="@bsSettings_List_Rows[g]" EnableRender="true"></ResizeHandle>
                     </div>
                 </td>
                 @for (int k = 0; k < CompBlazorSplitters_List_Cols.Count - 1; k++)
                 {
-                    <td valign="middle" align="center" style=@("border: 1px solid black;background-color:"+ bsSettings_List_Rows[k].BgColor)>
+                    <td valign="middle" align="center" style=@("border: 1px solid black;background-color:"+ bsSettings_List_Rows[k]["BgColor"])>
                         @Values_Matrix[g, k]
                     </td>
                 }
@@ -57,7 +57,7 @@
         <div style="@cmdGetStyle1Div1()">
             <span style="margin:5px;color:blue">@VDivHeight1</span>
         </div>
-        <ResizeHandle OnPositionChange="@OnPositionChangePanel1" bsSettings="@bsSettingPanel1" EnableRender="true"></ResizeHandle>
+        <ResizeHandle OnPositionChange="@OnPositionChangePanel1" @attributes="@bsSettingPanel1" EnableRender="true"></ResizeHandle>
         <div style="@cmdGetStyle1Div2()">
             <span style="margin:5px;color:blue">@VDivHeight2</span>
         </div>
@@ -70,7 +70,7 @@
         <div style="@cmdGetStyle2Div1()">
             <span style="margin:5px;color:blue">@HDivWidth1</span>
         </div>
-        <ResizeHandle OnPositionChange="@OnPositionChangePanel2" bsSettings="@bsSettingPanel2" EnableRender="true"></ResizeHandle>
+        <ResizeHandle OnPositionChange="@OnPositionChangePanel2" @attributes="@bsSettingPanel2" EnableRender="true"></ResizeHandle>
         <div style="@cmdGetStyle2Div2()">
             <span style="margin:5px;color:blue">@HDivWidth2</span>
         </div>
@@ -85,8 +85,8 @@
     public List<ResizeHandle> CompBlazorSplitters_List_Rows = new List<ResizeHandle>();
 
 
-    public List<BsSettings> bsSettings_List_Cols { get; set; } = new List<BsSettings>();
-
+    public List<Dictionary<string, object>> bsSettings_List_Cols { get; set; } = new List<Dictionary<string, object>>();
+    public List<Dictionary<string, object>> bsSettings_List_Rows { get; set; } = new List<Dictionary<string, object>>();
 
 
     int VDivHeight1 = 100;
@@ -96,9 +96,8 @@
     int HDivWidth2 = 100;
 
 
-    public List<BsSettings> bsSettings_List_Rows { get; set; } = new List<BsSettings>();
-    public BsSettings bsSettingPanel1 { get; set; } = new BsSettings();
-    public BsSettings bsSettingPanel2 { get; set; } = new BsSettings();
+    public Dictionary<string, object> bsSettingPanel1 { get; set; }
+    public Dictionary<string, object> bsSettingPanel2 { get; set; } 
 
 
 
@@ -140,44 +139,44 @@
 
         for (int i = 0; i < 5; i++)
         {
-            bsSettings_List_Cols.Add(new BsSettings("VerticalScroll" + i)
+            bsSettings_List_Cols.Add(new Dictionary<string, object>()
             {
-                Index = bsSettings_List_Cols.Count,
-                Width = 5,
-                Height = 40,
-                BgColor = "#bfbfbf",
+                ["Index"] = bsSettings_List_Cols.Count,
+                ["Width"] = 5d,
+                ["Height"] = 40d,
+                ["BgColor"] = "#bfbfbf",
             });
 
 
-            bsSettings_List_Rows.Add(new BsSettings("HorizontalScroll" + 1)
+            bsSettings_List_Rows.Add(new Dictionary<string, object>()
             {
-                VerticalOrHorizontal = true,
-                Index = bsSettings_List_Rows.Count,
-                Width = 30,
-                Height = 5,
-                BgColor = "#b3ffb3",
+                ["VerticalOrHorizontal"] = true,
+                ["Index"] = bsSettings_List_Rows.Count,
+                ["Width"] = 30d,
+                ["Height"] = 5d,
+                ["BgColor"] = "#b3ffb3",
             });
         }
 
 
 
-        bsSettingPanel1 = new BsSettings("HorizontalScrollpanel")
+        bsSettingPanel1 = new Dictionary<string, object>
         {
-            VerticalOrHorizontal = true,
-            Index = 0,
-            Width = 200,
-            Height = 4,
-            BgColor = "#bfbfbf",
+            ["VerticalOrHorizontal"] = true,
+            ["Index"] = 0,
+            ["Width"] = 200d,
+            ["Height"] = 4d,
+            ["BgColor"] = "#bfbfbf",
         };
 
 
-        bsSettingPanel2 = new BsSettings("VerticalScrollpanel")
+        bsSettingPanel2 = new Dictionary<string, object>()
         {
-            VerticalOrHorizontal = false,
-            Index = 0,
-            Width = 4,
-            Height = 200,
-            BgColor = "#b3ffb3",
+            ["VerticalOrHorizontal"] = false,
+            ["Index"] = 0,
+            ["Width"] = 4d,
+            ["Height"] = 200d,
+            ["BgColor"] = "#b3ffb3",
         };
 
 
@@ -319,5 +318,4 @@
     {
         return "background-color:#b3ffb3;height:200px;min-width:40px;max-width:160px;width:" + HDivWidth2 + "px";
     }
-
 }
