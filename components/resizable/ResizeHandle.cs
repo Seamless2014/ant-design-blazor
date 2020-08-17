@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Components.Web;
 
 namespace AntDesign
 {
-    public class ResizeHandle : AntDomComponentBase, IDisposable
+    public class ResizeHandle : AntDomComponentBase
     {
         [Parameter]
         public int Index { get; set; }
@@ -38,6 +38,12 @@ namespace AntDesign
         [Parameter]
         public Action<int, int, int> OnDragEnd { get; set; }
 
+        [Parameter]
+        public string Direction { get; set; } = "bottomRight";
+
+        [CascadingParameter]
+        public Resizable Parent { get; set; }
+
         private readonly Splitter _splitter = new Splitter();
 
         private bool _dragMode = false;
@@ -45,10 +51,13 @@ namespace AntDesign
         [Parameter]
         public bool EnableRender { get; set; } = true;
 
+        private bool _boxHover = false;
+
         protected override void OnInitialized()
         {
             _dragMode = false;
-
+            SetClass();
+            Parent?.AddHandle(this);
             base.OnInitialized();
         }
 
@@ -67,19 +76,39 @@ namespace AntDesign
                 builder.OpenElement(i++, "div");
                 builder.AddAttribute(i++, "id", Id);
                 builder.AddAttribute(i++, "style", GetStyle());
+                builder.AddAttribute(i++, "css", ClassMapper.Class);
                 builder.AddAttribute(i++, "onpointerdown", EventCallback.Factory.Create<PointerEventArgs>(this, OnPointerDown));
                 builder.AddAttribute(i++, "onpointermove", EventCallback.Factory.Create<PointerEventArgs>(this, OnPointerMove));
                 builder.AddAttribute(i++, "onpointerup", EventCallback.Factory.Create<PointerEventArgs>(this, OnPointerUp));
+                builder.AddAttribute(i++, "onmouseenter", EventCallback.Factory.Create<MouseEventArgs>(this, OnMouseEnter));
+                builder.AddAttribute(i++, "onmouseleave", EventCallback.Factory.Create<MouseEventArgs>(this, OnMouseLeave));
+                builder.AddAttribute(i++, "onmousedown", EventCallback.Factory.Create<MouseEventArgs>(this, OnMouseDown));
+                builder.AddAttribute(i++, "ontouchstart", EventCallback.Factory.Create<TouchEventArgs>(this, OnMouseDown));
 
                 builder.AddEventPreventDefaultAttribute(i++, "onmousemove", true);
 
                 builder.AddElementReferenceCapture(i++, (value) => { Ref = value; });
-                //builder.AddAttribute(k++, "onmousemove", EventCallback.Factory.Create<MouseEventArgs>(this, "return false;")); //event.preventDefault()
-
                 builder.CloseElement();
 
                 EnableRender = false;
             }
+        }
+
+        private void SetClass()
+        {
+            var prefixCls = "ant-resizable-handle";
+
+            ClassMapper
+                .Add($"{prefixCls}")
+                .If($"{prefixCls}-top", () => Direction == ResizeHandleDirection.Top)
+                .If($"{prefixCls}-right", () => Direction == ResizeHandleDirection.Right)
+                .If($"{prefixCls}-bottom", () => Direction == ResizeHandleDirection.Bottom)
+                .If($"{prefixCls}-topRight", () => Direction == ResizeHandleDirection.TopRight)
+                .If($"{prefixCls}-bottomRight", () => Direction == ResizeHandleDirection.BottomRight)
+                .If($"{prefixCls}-bottomLeft", () => Direction == ResizeHandleDirection.BottomLeft)
+                .If($"{prefixCls}-topLeft", () => Direction == ResizeHandleDirection.TopLeft)
+                .If($"{prefixCls}-box-hover", () => _boxHover)
+                ;
         }
 
         internal string GetStyle()
@@ -117,6 +146,20 @@ namespace AntDesign
             return sb1.ToString();
         }
 
+        private void OnMouseEnter()
+        {
+            this._boxHover = true;
+        }
+
+        private void OnMouseLeave()
+        {
+            this._boxHover = false;
+        }
+
+        private void OnMouseDown()
+        {
+        }
+
         private void OnPointerDown(PointerEventArgs e)
         {
             JsInvokeAsync<bool>(JSInteropConstants.SetPointerCapture, Ref, e.PointerId);
@@ -124,20 +167,20 @@ namespace AntDesign
 
             if (IsDiagonal)
             {
-                _splitter.PreviousPosition = (int)e.ClientX;
-                _splitter.PreviousPosition2 = (int)e.ClientY;
+                _splitter.PreviousPositionX = (int)e.ClientX;
+                _splitter.PreviousPositionY = (int)e.ClientY;
             }
             else
             {
                 if (VerticalOrHorizontal)
                 {
-                    _splitter.PreviousPosition = (int)e.ClientY;
-                    _splitter.PreviousPosition2 = (int)e.ClientX;
+                    _splitter.PreviousPositionX = (int)e.ClientY;
+                    _splitter.PreviousPositionY = (int)e.ClientX;
                 }
                 else
                 {
-                    _splitter.PreviousPosition = (int)e.ClientX;
-                    _splitter.PreviousPosition2 = (int)e.ClientY;
+                    _splitter.PreviousPositionX = (int)e.ClientX;
+                    _splitter.PreviousPositionY = (int)e.ClientY;
                 }
             }
 
@@ -150,42 +193,42 @@ namespace AntDesign
             {
                 if (e.Buttons == 1)
                 {
-                    int newPosition = 0;
-                    int newPosition2 = 0;
+                    int positionX = 0;
+                    int positionY = 0;
 
                     if (IsDiagonal)
                     {
-                        newPosition = (int)e.ClientX;
-                        newPosition2 = (int)e.ClientY;
+                        positionX = (int)e.ClientX;
+                        positionY = (int)e.ClientY;
 
-                        if (_splitter.PreviousPosition != newPosition || _splitter.PreviousPosition2 != newPosition2)
+                        if (_splitter.PreviousPositionX != positionX || _splitter.PreviousPositionY != positionY)
                         {
-                            OnDiagonalPositionChange?.Invoke(Index, newPosition - _splitter.PreviousPosition, newPosition2 - _splitter.PreviousPosition2);
+                            OnDiagonalPositionChange?.Invoke(Index, positionX - _splitter.PreviousPositionX, positionY - _splitter.PreviousPositionY);
 
-                            _splitter.PreviousPosition = newPosition;
-                            _splitter.PreviousPosition2 = newPosition2;
+                            _splitter.PreviousPositionX = positionX;
+                            _splitter.PreviousPositionY = positionY;
                         }
                     }
                     else
                     {
                         if (VerticalOrHorizontal)
                         {
-                            newPosition = (int)e.ClientY;
-                            newPosition2 = (int)e.ClientX;
+                            positionX = (int)e.ClientY;
+                            positionY = (int)e.ClientX;
                         }
                         else
                         {
-                            newPosition = (int)e.ClientX;
-                            newPosition2 = (int)e.ClientY;
+                            positionX = (int)e.ClientX;
+                            positionY = (int)e.ClientY;
                         }
 
-                        if (Math.Abs(_splitter.PreviousPosition2 - newPosition2) < 100)
+                        if (Math.Abs(_splitter.PreviousPositionY - positionY) < 100)
                         {
-                            if (_splitter.PreviousPosition != newPosition)
+                            if (_splitter.PreviousPositionX != positionX)
                             {
-                                OnPositionChange?.Invoke(VerticalOrHorizontal, Index, newPosition - _splitter.PreviousPosition);
+                                OnPositionChange?.Invoke(VerticalOrHorizontal, Index, positionX - _splitter.PreviousPositionX);
 
-                                _splitter.PreviousPosition = newPosition;
+                                _splitter.PreviousPositionX = positionX;
                             }
                         }
                         //else
@@ -205,8 +248,10 @@ namespace AntDesign
             OnDragEnd?.Invoke(Index, (int)e.ClientX, (int)e.ClientY);
         }
 
-        public void Dispose()
+        protected override void Dispose(bool disposing)
         {
+            Parent?.RemoveHandle(this);
+            base.Dispose(disposing);
         }
 
         public void SetColor(string c)

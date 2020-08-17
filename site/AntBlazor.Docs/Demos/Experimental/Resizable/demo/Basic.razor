@@ -1,12 +1,4 @@
-﻿<h3 style="color:darkred">This is blazor Splitter prototype</h3>
-
-<br />
-
-<h4>Try to resize column/row or horizontal/vertical divs</h4>
-
-
-
-<table style=@("border: 1px solid black;margin-left:100px;margin-top:50px")>
+﻿<table style=@("border: 1px solid black;margin-left:100px;margin-top:50px")>
     <thead>
         <tr>
             <th style=@("border: 1px solid black;width:30px;height:40px;background-color:"+bsSettings_List_Cols[0]["BgColor"])>
@@ -57,7 +49,7 @@
         <div style="@cmdGetStyle1Div1()">
             <span style="margin:5px;color:blue">@VDivHeight1</span>
         </div>
-        <ResizeHandle OnPositionChange="@OnPositionChangePanel1" @attributes="@bsSettingPanel1" EnableRender="true"></ResizeHandle>
+        <ResizeHandle  @ref="handle1"  OnPositionChange="@OnPositionChangePanel1" @attributes="@bsSettingPanel1" EnableRender="true"></ResizeHandle>
         <div style="@cmdGetStyle1Div2()">
             <span style="margin:5px;color:blue">@VDivHeight2</span>
         </div>
@@ -70,7 +62,7 @@
         <div style="@cmdGetStyle2Div1()">
             <span style="margin:5px;color:blue">@HDivWidth1</span>
         </div>
-        <ResizeHandle OnPositionChange="@OnPositionChangePanel2" @attributes="@bsSettingPanel2" EnableRender="true"></ResizeHandle>
+        <ResizeHandle @ref="handle2" OnPositionChange="@OnPositionChangePanel2" @attributes="@bsSettingPanel2" EnableRender="true"></ResizeHandle>
         <div style="@cmdGetStyle2Div2()">
             <span style="margin:5px;color:blue">@HDivWidth2</span>
         </div>
@@ -85,6 +77,9 @@
     public List<ResizeHandle> CompBlazorSplitters_List_Rows = new List<ResizeHandle>();
 
 
+    ResizeHandle handle1;
+    ResizeHandle handle2;
+
     public List<Dictionary<string, object>> bsSettings_List_Cols { get; set; } = new List<Dictionary<string, object>>();
     public List<Dictionary<string, object>> bsSettings_List_Rows { get; set; } = new List<Dictionary<string, object>>();
 
@@ -97,7 +92,7 @@
 
 
     public Dictionary<string, object> bsSettingPanel1 { get; set; }
-    public Dictionary<string, object> bsSettingPanel2 { get; set; } 
+    public Dictionary<string, object> bsSettingPanel2 { get; set; }
 
 
 
